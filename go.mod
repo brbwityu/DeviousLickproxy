@@ -1,4 +1,4 @@
-module https://github.com/brbwityu/DeviousLickproxy
+module DeviousGo
 
 go 1.21
 
