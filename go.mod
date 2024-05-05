@@ -1,6 +1,6 @@
-module DeviousGo
+module https://github.com/brbwityu/DeviousLickproxy
 
-go 1.22
+go 1.21
 
 require (
 	github.com/PuerkitoBio/goquery v1.9.2 // indirect
