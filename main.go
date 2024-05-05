@@ -295,7 +295,7 @@ func snipeItem(jsonPayload []byte, productId int64, idstring string, priceAttr s
 
 func getRecentAveragePrices() {
 	for _, id := range ids {
-		var newcookie string = getRandomCookie()
+		var newcookie string = ""
 		jar, err := cookiejar.New(nil)
 		if err != nil {
 			log.Fatal(err)
@@ -340,8 +340,10 @@ func getRecentAveragePrices() {
 		}
 
 		averagePrice := data["recentAveragePrice"].(float64)
-		fmt.Println(id)
 		rap[id] = int64(averagePrice)
+		strNum := strconv.Itoa(int(id))
+		stringNum := strconv.Itoa(int(averagePrice))
+		fmt.Println("ID: " + string(strNum) + ", RAP: " + stringNum)
 	}
 }
 
