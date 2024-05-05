@@ -184,16 +184,20 @@ func sendWebhook(itemid string, price string, statuscode int, reason string) {
 }
 
 func createTransportWithProxy() (*http.Transport, error) {
-	// Define the proxy url
-	proxyURL, err := url.Parse("http://" + getRandomProxy())
-	if err != nil {
-		return nil, err
-	}
+
+	// Get a random proxy
+	proxy := getRandomProxy()
 
 	// Split the proxy details
-	proxyDetails := strings.Split(getRandomProxy(), ":")
+	proxyDetails := strings.Split(proxy, ":")
 	if len(proxyDetails) < 4 {
 		return nil, fmt.Errorf("invalid proxy format")
+	}
+
+	// Define the proxy url
+	proxyURL, err := url.Parse(fmt.Sprintf("http://%s:%s", proxyDetails[0], proxyDetails[1]))
+	if err != nil {
+		return nil, err
 	}
 
 	// Set up the proxy credentials
