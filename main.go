@@ -183,6 +183,26 @@ func sendWebhook(itemid string, price string, statuscode int, reason string) {
 	http.DefaultClient.Do(req)
 }
 
+func createTransportWithProxy() (*http.Transport, error) {
+	// Define the proxy url
+	proxyURL, err := url.Parse("http://" + getRandomProxy())
+	if err != nil {
+		return nil, err
+	}
+
+	// Split the proxy details
+	proxyDetails := strings.Split(getRandomProxy(), ":")
+	if len(proxyDetails) < 4 {
+		return nil, fmt.Errorf("invalid proxy format")
+	}
+
+	// Set up the proxy credentials
+	proxyURL.User = url.UserPassword(proxyDetails[2], proxyDetails[3])
+
+	// Setup HTTP Transport with the proxy
+	return &http.Transport{Proxy: http.ProxyURL(proxyURL)}, nil
+}
+
 func snipeItem(jsonPayload []byte, productId int64, idstring string, priceAttr string) {
 	targetURL, _ := url.Parse("https://economy.roblox.com/v1/purchases/products/" + strconv.FormatInt(productId, 10))
 
@@ -202,16 +222,15 @@ func snipeItem(jsonPayload []byte, productId int64, idstring string, priceAttr s
 	}
 	jar.SetCookies(targetURL, cookies)
 
-	proxyURL, err := url.Parse("http://" + getRandomProxy())
+	// Initialize HTTP Transport with proxy
+	tr, err := createTransportWithProxy()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	client := &http.Client{
-		Transport: &http.Transport{
-			Proxy: http.ProxyURL(proxyURL),
-		},
-		Jar: jar,
+		Transport: tr, // Attaching transport with proxy to client
+		Jar:       jar,
 	}
 
 	secondRequest, err := http.NewRequest("POST", targetURL.String(), bytes.NewBuffer(jsonPayload))
@@ -278,16 +297,15 @@ func getRecentAveragePrices() {
 			log.Fatal(err)
 		}
 
-		proxyURL, err := url.Parse("http://" + getRandomProxy())
+		// Initialize HTTP Transport with proxy
+		tr, err := createTransportWithProxy()
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		client := &http.Client{
-			Jar: jar,
-			Transport: &http.Transport{
-				Proxy: http.ProxyURL(proxyURL),
-			},
+			Jar:       jar,
+			Transport: tr, // Attaching transport with proxy to client
 		}
 
 		client.Jar.SetCookies(&url.URL{
@@ -339,20 +357,15 @@ func checkId(id int64) (string, error) {
 	}
 	jar.SetCookies(url, cookies)
 
-	// Define a proxy URL
-	proxyurl, err := url.Parse("http://" + getRandomProxy())
+	// Initialize HTTP Transport with proxy
+	tr, err := createTransportWithProxy()
 	if err != nil {
 		return "", err
 	}
 
-	// Create a custom transport with the proxy
-	transport := &http.Transport{
-		Proxy: http.ProxyURL(proxyurl),
-	}
-
 	client := &http.Client{
 		Jar:       jar,
-		Transport: transport, // Attach the custom transport to the client
+		Transport: tr, // Attaching transport with proxy to client
 	}
 
 	firstRequest, err := http.NewRequest("GET", url.String(), strings.NewReader("1"))
@@ -362,6 +375,8 @@ func checkId(id int64) (string, error) {
 	}
 
 	response, err := client.Do(firstRequest)
+
+	// ... rest of the function ...
 
 	if err != nil {
 		return "", err
